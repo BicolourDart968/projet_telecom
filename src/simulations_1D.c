@@ -117,7 +117,7 @@ int run_skin_depth_validation(double c) {
         double *E_1D = NULL;
         double *B_1D = NULL;
         if (calcul_1D_diel(m_f, &E_1D, &B_1D, sin, step_time_f, length_f,
-                           dt_f, EPS_0, omega, eps_r_eau_mer, sigma_eau_mer, dx_f)) {
+                           dt_f, EPS_0, omega, eps_r_eau_mer, sigma_eau_mer, dx_f, 1.0)) {
             printf("Erreur simulation 1D pour %g Hz\n", f);
             free(E_1D);
             free(B_1D);

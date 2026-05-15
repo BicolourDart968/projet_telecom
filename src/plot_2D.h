@@ -42,4 +42,10 @@ void gp_plot_field(FILE *gp, double **field, int m);
 
 void gp_plot_curve(FILE *gp, double *data, int n, const char *color);
 
+void gp_plot_power(FILE *gp, double *P_sim, double *P_theo,
+                          int q, double dt, int q_start);
+
+void gp_plot_voc(FILE *gp, double *Voc, double *Voc_theo,
+                        int q, double dt, int q_start);
+
 #endif /* PLOT_2D_H */

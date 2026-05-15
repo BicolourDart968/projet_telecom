@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "calcul_1D_diel.h"
+#include "calcul_1D_libre.h"
 #include "plot_1D.h"
 #include "fonctions.h"
 #include "plot_2D.h"
@@ -28,7 +29,7 @@ int main() {
     length = 20 * lambda;
     dx = lambda / 20;
     dt = dx / (2 * c);
-    time = 3*length / c;
+    time = length / c;
 
     m = round(length / dx);
     step_time = round(time / dt);
@@ -122,10 +123,12 @@ int main() {
                               .y_end   = round((m + 5) / 2),
                               .x = round(m / 2), .forme = sin,
                               .w = 2 * PI * c / lambda};
+                double he = lambda / PI;  // hauteur equivalente pour dipole lambda/2
+                double Ra = 73.0;         // resistance d'antenne pour dipole lambda/2
                 if (calcul_2D_antenne(m, &E, &Bx, &By, src,
                                       round(m / 4), round(m / 4),
                                       step_time, dt, EPS_0, dx,
-                                      eps_r_prisme, sigma_0, length, lambda))
+                                      eps_r_prisme, sigma_0, length, lambda, he, Ra))
                     printf("Erreur simulation\n");
                 break;
             }
@@ -135,7 +138,7 @@ int main() {
                 double w = 2 * PI * c / lambda;
                 if (calcul_1D_diel(m, &E_1D, &B_1D, sin, step_time,
                                    length, dt, EPS_0, w,
-                                   eps_r_milieu, sigma_milieu, dx))
+                                   eps_r_milieu, sigma_milieu, dx, 1.0))
                     printf("Erreur simulation 1D\n");
                 else
                     plot_1D(E_1D, m, dx);
@@ -152,24 +155,18 @@ int main() {
             case 8: {
                 //1D libre sin
                 double w = 2 * PI * c / lambda;
-                if (calcul_1D_diel(m, &E_1D, &B_1D, sin, step_time,
-                                   length, dt, EPS_0, w,
-                                   eps_r_libre_1D, sigma_libre_1D, dx))
+                if (calcul_1D_libre(m, &E_1D, &B_1D, sin, step_time,
+                                   dt, EPS_0, w, 10.0))
                     printf("Erreur simulation 1D libre sinus\n");
-                else
-                    plot_1D(E_1D, m, dx);
                 break;
             }
 
             case 9: {
                 //1D libre gauss
                 double w = 2 * PI * c / lambda;
-                if (calcul_1D_diel(m, &E_1D, &B_1D, gaussienne, step_time,
-                                   length, dt, EPS_0, w,
-                                   eps_r_libre_1D, sigma_libre_1D, dx))
+                if (calcul_1D_libre(m, &E_1D, &B_1D, gaussienne, step_time,
+                                    dt, EPS_0, w, 10.0))
                     printf("Erreur simulation 1D libre gaussienne\n");
-                else
-                    plot_1D(E_1D, m, dx);
                 break;
             }
 

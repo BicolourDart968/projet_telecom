@@ -86,3 +86,66 @@ void gp_plot_curve(FILE *gp, double *data, int n, const char *color) {
     fprintf(gp, "e\n");
     fflush(gp);
 }
+
+void gp_plot_power(FILE *gp, double *P_sim, double *P_theo,
+                          int q, double dt, int q_start)
+{
+    if (!gp) return;
+
+    fprintf(gp, "set xlabel 't (s)'; set ylabel 'P (W)'\n");
+    fprintf(gp, "set title 'Puissance recue'\n");
+    fprintf(gp, "set style data lines\n");
+    fprintf(gp, "set xrange [%g:*]\n", dt * q_start);
+    fprintf(gp, "set yrange [0:*]\n");
+    fprintf(gp, "set grid\n");
+    fprintf(gp, "plot '-' w lines lc rgb 'red' lw 2 t 'Simulee',"
+                " '-' w lines lc rgb 'blue' lw 2 t 'Theorique',"
+                " '-' w lines lc rgb 'green' lw 2 t 'Difference'\n");
+
+    for (int i = q_start; i <= q; i++)
+        fprintf(gp, "%g %g\n", dt * i, P_sim[i]);
+    fprintf(gp, "e\n");
+
+    for (int i = q_start; i <= q; i++)
+        fprintf(gp, "%g %g\n", dt * i, P_theo[i]);
+    fprintf(gp, "e\n");
+
+    for (int i = q_start; i <= q; i++)
+        fprintf(gp, "%g %g\n", dt * i, fabs(P_sim[i] - P_theo[i]));
+    fprintf(gp, "e\n");
+
+    fflush(gp);
+}
+
+/**
+ * Plot de la tension reçue par l'antenne
+ */
+void gp_plot_voc(FILE *gp, double *Voc, double *Voc_theo,
+                        int q, double dt, int q_start)
+{
+    if (!gp) return;
+
+    fprintf(gp, "set xlabel 't (s)'; set ylabel 'Voc (V)'\n");
+    fprintf(gp, "set title 'Tension reçue'\n");
+    fprintf(gp, "set style data lines\n");
+    fprintf(gp, "set xrange [%g:*]\n", dt * q_start);
+    fprintf(gp, "set yrange [0:*]\n");
+    fprintf(gp, "set grid\n");
+    fprintf(gp, "plot '-' w lines lc rgb 'red' lw 2 t 'Simulee',"
+                " '-' w lines lc rgb 'blue' lw 2 t 'Theorique',"
+                " '-' w lines lc rgb 'green' lw 2 t 'Difference'\n");
+
+    for (int i = q_start; i <= q; i++)
+        fprintf(gp, "%g %g\n", dt * i, Voc[i]);
+    fprintf(gp, "e\n");
+
+    for (int i = q_start; i <= q; i++)
+        fprintf(gp, "%g %g\n", dt * i, Voc_theo[i]);
+    fprintf(gp, "e\n");
+
+    for (int i = q_start; i <= q; i++)
+        fprintf(gp, "%g %g\n", dt * i, fabs(Voc[i] - Voc_theo[i]));
+    fprintf(gp, "e\n");
+
+    fflush(gp);
+}

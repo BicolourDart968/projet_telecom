@@ -183,7 +183,7 @@ double fabry_perrot_mask(double x, double y, double length, double dx)
 {
     (void) y;
     double thick = 3.0 * dx;
-    double L_cav = 4.67 * LAMBDA;
+    double L_cav = 4.0 * LAMBDA;
     double center = length / 2.0;
     double mir1 = center - L_cav / 2.0;
     double mir2 = center + L_cav / 2.0;

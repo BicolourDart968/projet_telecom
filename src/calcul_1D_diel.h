@@ -1,2 +1,2 @@
 int calcul_1D_diel(int m, double **E, double **B, double (*source)(double), int step_time, double length,
-double dt, double eps_0, double w, double (*eps_r)(double, double), double (*sigma)(double, double), double dx);
+double dt, double eps_0, double w, double (*eps_r)(double, double), double (*sigma)(double, double), double dx, double A);
