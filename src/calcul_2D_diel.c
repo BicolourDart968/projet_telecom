@@ -40,7 +40,7 @@ static void free_field(double **f, int m) {
     free(f);
 }
 
-int calcul_2D_diel(int m, double ***E, double ***Bx, double ***By,
+int calcul_2D_diel(int m, double ***E, double ***Bx, double ***By, double ***E_phas,
                    source src, int step_time, double dt, double eps_0,
                    double w, double dx,
                    double (*eps_r_2D)(double, double, double),
@@ -54,7 +54,8 @@ int calcul_2D_diel(int m, double ***E, double ***Bx, double ***By,
     *E  = alloc_field(m);
     *Bx = alloc_field(m);
     *By = alloc_field(m);
-    if (!*E || !*Bx || !*By) {
+    *E_phas = alloc_field(m);
+    if (!*E || !*Bx || !*By || !*E_phas) {
         fprintf(stderr, "ERREUR allocation champs\n");
         return 1;
     }
@@ -69,6 +70,7 @@ int calcul_2D_diel(int m, double ***E, double ***Bx, double ***By,
         gp_setup_image(gp1, m, -0.75, 0.75, "S = |E| * sqrt(Bx²+By²)");
     }
 
+    int q_regime = round(step_time / 2);
     for (int q = 0; q < step_time; q++) {
 
         // Mise à jour E 
@@ -88,6 +90,16 @@ int calcul_2D_diel(int m, double ***E, double ***Bx, double ***By,
         // Source 
         for (int j = src.y_start; j < src.y_end - 1; j++)
             (*E)[src.x][j] += src.A * src.forme(src.w * dt * q + src.k * j * dx);
+
+        if (q > q_regime) {
+            for (int i = 0; i < m; i++) {
+                for (int j = 0; j < m; j++) {
+                    double value = fabs((*E)[i][j]);
+                    if (value > (*E_phas)[i][j])
+                        (*E_phas)[i][j] = value;
+                }
+            }
+        }
 
         // Mise à jour B 
         for (int i = 0; i < m - 1; i++) {

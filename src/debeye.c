@@ -27,7 +27,7 @@ static void plot_frame_debye(FILE *pipe, double *E, int m, int q) {
     fflush(pipe);
 }
 
-int debeye(int m, double **E, double **B, int step_time, double dt, double eps_0, double w) {
+int debeye(int m, double **E, double **B, double **E_phas, int step_time, double dt, double eps_0, double w) {
 
     double A = 50.0;       //amplitude de la source
 
@@ -37,7 +37,8 @@ int debeye(int m, double **E, double **B, int step_time, double dt, double eps_0
 
     *E = malloc(sizeof(double) * m);
     *B = malloc(sizeof(double) * m);
-    if (*B == NULL || *E == NULL || P == NULL || E_bdroit == NULL || E_bgauche == NULL) {
+    *E_phas = malloc(sizeof(double) * m);
+    if (*B == NULL || *E == NULL || *E_phas == NULL || P == NULL || E_bdroit == NULL || E_bgauche == NULL) {
         printf("ERREUR lors de l'allocation des tableaux des champs\n");
         return 1;
     }
@@ -51,8 +52,11 @@ int debeye(int m, double **E, double **B, int step_time, double dt, double eps_0
     for (int i = 0; i < m; i++) {
         (*E)[i] = 0;
         (*B)[i] = 0;
+        (*E_phas)[i] = 0.0;
         P[i] = 0.0;
     }
+
+    int q_regime = round(step_time / 2);
 
     // Parametres Debye
     double tau = 1.0 / w;
@@ -89,6 +93,14 @@ int debeye(int m, double **E, double **B, int step_time, double dt, double eps_0
         }
 
         E_bdroit[q] = (*E)[m-1];
+        if (q > q_regime) {
+            for (int i = 0; i < m; i++) {
+                double value = fabs((*E)[i]);
+                if (value > (*E_phas)[i])
+                    (*E_phas)[i] = value;
+            }
+        }
+
         double env = exp(-(t - t0) * (t - t0) / (2.0 * sigma_t * sigma_t));
         (*E)[i_src] += A * env * sin(w*t);
 

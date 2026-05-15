@@ -1,1 +1,1 @@
-int calcul_2D_libre(int m, double ***E, double ***Bx, double ***By, double (*source)(double), int step_time, double dt, double eps_0, double w, double dx, double (*mur_conduct)(double, double, double), double length);
+int calcul_2D_libre(int m, double ***E, double ***Bx, double ***By, double ***E_phas, double (*source)(double), int step_time, double dt, double eps_0, double w, double dx, double (*mur_conduct)(double, double, double), double length);

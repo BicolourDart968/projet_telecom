@@ -1,1 +1,1 @@
-int calcul_1D_libre(int m, double **E, double **B, double (*source)(double), int step_time, double dt, double eps_0, double w, double A);
+int calcul_1D_libre(int m, double **E, double **B, double **E_phas, double (*source)(double), int step_time, double dt, double eps_0, double w, double A);

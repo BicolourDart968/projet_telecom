@@ -31,6 +31,7 @@ static double compute_alpha(double omega, double eps_r, double sigma) {
 //
 // j_start, j_end : indices de la plage spatiale à fitter (exclut la source et les bords).
 // Retourne 0 si OK, 1 si pas assez de points exploitables.
+//Code IA
 static int fit_log_decay(const double *E, int m, double dx,
                          int j_start, int j_end,
                          double *alpha_out, double *A_out)
@@ -116,7 +117,8 @@ int run_skin_depth_validation(double c) {
         // Simulation 1D
         double *E_1D = NULL;
         double *B_1D = NULL;
-        if (calcul_1D_diel(m_f, &E_1D, &B_1D, sin, step_time_f, length_f,
+        double *E_1D_phas = NULL;
+        if (calcul_1D_diel(m_f, &E_1D, &B_1D, &E_1D_phas, sin, step_time_f, length_f,
                            dt_f, EPS_0, omega, eps_r_eau_mer, sigma_eau_mer, dx_f, 1.0)) {
             printf("Erreur simulation 1D pour %g Hz\n", f);
             free(E_1D);

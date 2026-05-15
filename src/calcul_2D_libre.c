@@ -22,7 +22,7 @@ static double **alloc_field(int m) {
     return f;
 }
 
-int calcul_2D_libre(int m, double ***E, double ***Bx, double ***By, double (*source)(double), int step_time, double dt, double eps_0, double w, double dx, double (*mur_conduct)(double, double, double), double length) {
+int calcul_2D_libre(int m, double ***E, double ***Bx, double ***By, double ***E_phas, double (*source)(double), int step_time, double dt, double eps_0, double w, double dx, double (*mur_conduct)(double, double, double), double length) {
 
     double A = 1.0;       //amplitude de la source
     int frame = 1;
@@ -31,7 +31,8 @@ int calcul_2D_libre(int m, double ***E, double ***Bx, double ***By, double (*sou
     *E  = alloc_field(m);
     *Bx = alloc_field(m);
     *By = alloc_field(m);
-    if (!*E || !*Bx || !*By) {
+    *E_phas = alloc_field(m);
+    if (!*E || !*Bx || !*By || !*E_phas) {
         printf("ERREUR allocation champs\n");
         return 1;
     }
@@ -40,6 +41,8 @@ int calcul_2D_libre(int m, double ***E, double ***Bx, double ***By, double (*sou
     FILE *gp = gp_open();
     if (!gp) return 1;
     gp_setup_image(gp, m, -0.02, 0.02, "Champ Ez");
+
+    int q_regime = round(step_time / 2);
 
     //Dans les boucles suivantes, on ne parcourt pas le bord afin de ne pas toucher aux CL
 
@@ -50,6 +53,16 @@ int calcul_2D_libre(int m, double ***E, double ***Bx, double ***By, double (*sou
         }
 
         (*E)[(int)round(m/2)][(int)round(m/2)] -= dt/eps_0*A*source(w*dt*q);  //On impose la source au milieu
+
+        if (q > q_regime) {
+            for (int i = 0; i < m; i++) {
+                for (int j = 0; j < m; j++) {
+                    double value = fabs((*E)[i][j]);
+                    if (value > (*E_phas)[i][j])
+                        (*E_phas)[i][j] = value;
+                }
+            }
+        }
 
         for(int i = 0; i < m-1; i++) {
             for(int j = 0; j < m-1; j++) {

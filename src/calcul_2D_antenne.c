@@ -24,7 +24,7 @@ static double **alloc_field(int m) {
     return f;
 }
 
-int calcul_2D_antenne(int m, double ***E, double ***Bx, double ***By,
+int calcul_2D_antenne(int m, double ***E, double ***Bx, double ***By, double ***E_phas,
                       source src, int xr, int yr, int step_time,
                       double dt, double eps_0, double dx,
                       double (*eps_r_2D)(double, double, double),
@@ -38,7 +38,8 @@ int calcul_2D_antenne(int m, double ***E, double ***Bx, double ***By,
     *E  = alloc_field(m);
     *Bx = alloc_field(m);
     *By = alloc_field(m);
-    if (!*E || !*Bx || !*By) {
+    *E_phas = alloc_field(m);
+    if (!*E || !*Bx || !*By || !*E_phas) {
         fprintf(stderr, "ERREUR allocation champs\n");
         return 1;
     }
@@ -75,6 +76,8 @@ int calcul_2D_antenne(int m, double ***E, double ***Bx, double ***By,
     int q_start = (int)((d0 / (1.0/sqrt(MU_0*EPS_0) * dt)) * 1.2);
     double ratio_theo = sqrt(d0 / d);
 
+    int q_regime = round(step_time / 2);
+
     // Boucle temporelle 
     for (int q = 0; q < step_time; q++) {
 
@@ -88,6 +91,16 @@ int calcul_2D_antenne(int m, double ***E, double ***Bx, double ***By,
 
         for (int j = src.y_start; j < src.y_end - 1; j++)
             (*E)[src.x][j] += src.A * src.forme(src.w * dt * q);
+
+        if (q > q_regime) {
+            for (int i = 0; i < m; i++) {
+                for (int j = 0; j < m; j++) {
+                    double value = fabs((*E)[i][j]);
+                    if (value > (*E_phas)[i][j])
+                        (*E_phas)[i][j] = value;
+                }
+            }
+        }
 
         for (int i = 0; i < m - 1; i++) {
             for (int j = 0; j < m - 1; j++) {

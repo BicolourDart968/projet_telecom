@@ -29,16 +29,17 @@ static void plot_frame_1D_diel(FILE *pipe, double *E, int m, int q) {
     fflush(pipe);
 }
 
-int calcul_1D_diel(int m, double **E, double **B, double (*source)(double), int step_time, double length,
+int calcul_1D_diel(int m, double **E, double **B, double **E_phas, double (*source)(double), int step_time, double length,
 double dt, double eps_0, double w, double (*eps_r)(double, double), double (*sigma)(double, double), double dx, double A) {
 
     double k;
 
     *E = malloc(sizeof(double) * m);
     *B = malloc(sizeof(double) * m);
+    *E_phas = malloc(sizeof(double) * m);
     double *E_bgauche = malloc(sizeof(double) * step_time);
     double *E_bdroit = malloc(sizeof(double) * step_time);
-    if (*B == NULL || *E == NULL || E_bdroit == NULL || E_bgauche == NULL) {
+    if (*B == NULL || *E == NULL || *E_phas == NULL || E_bdroit == NULL || E_bgauche == NULL) {
         printf("ERREUR lors de l'allocation des tableaux des champs\n");
         return 1;
     }
@@ -52,8 +53,10 @@ double dt, double eps_0, double w, double (*eps_r)(double, double), double (*sig
     for (int i = 0; i < m; i++) {
         (*E)[i] = 0;
         (*B)[i] = 0;
+        (*E_phas)[i] = 0.0;
     }
 
+    int q_regime = round(step_time / 2);
     for(int q = 0; q < step_time; q++) {
 
         double esp_r_val = eps_r(dx, length);
@@ -76,6 +79,14 @@ double dt, double eps_0, double w, double (*eps_r)(double, double), double (*sig
         }
 
         E_bdroit[q] = (*E)[m-2];
+
+        if (q > q_regime) {
+            for (int j = 0; j < m; j++) {
+                double value = fabs((*E)[j]);
+                if (value > (*E_phas)[j])
+                    (*E_phas)[j] = value;
+            }
+        }
 
         for(int j = 0; j < m-1; j++) {
             (*B)[j] += 0.5*((*E)[j+1] - (*E)[j]);

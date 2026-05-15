@@ -21,7 +21,7 @@
 
 
 int main() {
-    double **E, **Bx, **By, *E_1D, *B_1D, dx, dt, lambda, c, time, length;
+    double **E, **Bx, **By, **E_phas_2D, *E_1D, *B_1D, *E_phas_1D, dx, dt, lambda, c, time, length;
     int m, step_time;
 
     c = 1 / sqrt(MU_0 * EPS_0);
@@ -69,7 +69,7 @@ int main() {
                 source src = {.A = 1.0, .y_start = 1, .y_end = m - 1,
                               .x = round(m / 8), .forme = sin,
                               .w = PI * c / lambda};
-                if (calcul_2D_diel(m, &E, &Bx, &By, src, step_time,
+                if (calcul_2D_diel(m, &E, &Bx, &By, &E_phas_2D, src, step_time,
                                    dt, EPS_0, src.w, dx,
                                    eps_r_0, sigma_0, length, 1, 0))
                     printf("Erreur simulation\n");
@@ -81,7 +81,7 @@ int main() {
                 source src = {.A = 1.0, .y_start = 1, .y_end = m - 1,
                               .x = round(m / 8), .forme = sin,
                               .w = PI * c / lambda};
-                if (calcul_2D_diel(m, &E, &Bx, &By, src, step_time,
+                if (calcul_2D_diel(m, &E, &Bx, &By, &E_phas_2D, src, step_time,
                                    dt, EPS_0, src.w, dx,
                                    eps_r_0, sigma_0, length, 1, 1))
                     printf("Erreur simulation\n");
@@ -93,7 +93,7 @@ int main() {
                 source src = {.A = 1.0, .y_start = 1, .y_end = m - 1,
                               .x = round(m / 8), .forme = sin,
                               .w = PI * c / lambda};
-                if (calcul_2D_diel(m, &E, &Bx, &By, src, step_time,
+                if (calcul_2D_diel(m, &E, &Bx, &By, &E_phas_2D, src, step_time,
                                    dt, EPS_0, src.w, dx,
                                    eps_r_prisme, sigma_0, length, 0, 1))
                     printf("Erreur simulation\n");
@@ -107,7 +107,7 @@ int main() {
                 source src = {.A = 1.0, .y_start = 1, .y_end = m - 1,
                               .x = round(m / 8), .forme = sin,
                               .w = PI * c / lambda};
-                if (calcul_2D_diel(m, &E, &Bx, &By, src, step_time,
+                if (calcul_2D_diel(m, &E, &Bx, &By, &E_phas_2D, src, step_time,
                                    dt, EPS_0, src.w, dx,
                                    eps_r_prisme, sigma_0, length, 0, 0))
                     printf("Erreur simulation\n");
@@ -125,7 +125,7 @@ int main() {
                               .w = 2 * PI * c / lambda};
                 double he = lambda / PI;  // hauteur equivalente pour dipole lambda/2
                 double Ra = 73.0;         // resistance d'antenne pour dipole lambda/2
-                if (calcul_2D_antenne(m, &E, &Bx, &By, src,
+                if (calcul_2D_antenne(m, &E, &Bx, &By, &E_phas_2D, src,
                                       round(m / 4), round(m / 4),
                                       step_time, dt, EPS_0, dx,
                                       eps_r_prisme, sigma_0, length, lambda, he, Ra))
@@ -136,7 +136,7 @@ int main() {
             case 6: {
                 //Decroissance exp
                 double w = 2 * PI * c / lambda;
-                if (calcul_1D_diel(m, &E_1D, &B_1D, sin, step_time,
+                if (calcul_1D_diel(m, &E_1D, &B_1D, &E_phas_1D, sin, step_time,
                                    length, dt, EPS_0, w,
                                    eps_r_milieu, sigma_milieu, dx, 1.0))
                     printf("Erreur simulation 1D\n");
@@ -155,16 +155,17 @@ int main() {
             case 8: {
                 //1D libre sin
                 double w = 2 * PI * c / lambda;
-                if (calcul_1D_libre(m, &E_1D, &B_1D, sin, step_time,
+                if (calcul_1D_libre(m, &E_1D, &B_1D, &E_phas_1D, sin, step_time,
                                    dt, EPS_0, w, 10.0))
                     printf("Erreur simulation 1D libre sinus\n");
+                plot_1D(E_phas_1D, m, dx);
                 break;
             }
 
             case 9: {
                 //1D libre gauss
                 double w = 2 * PI * c / lambda;
-                if (calcul_1D_libre(m, &E_1D, &B_1D, gaussienne, step_time,
+                if (calcul_1D_libre(m, &E_1D, &B_1D, &E_phas_1D, gaussienne, step_time,
                                     dt, EPS_0, w, 10.0))
                     printf("Erreur simulation 1D libre gaussienne\n");
                 break;
@@ -177,7 +178,7 @@ int main() {
                               .x = round(m / 8), .forme = sin,
                               .w = PI * c / lambda,
                               .k = (PI / lambda) * sin(theta)};
-                if (calcul_2D_diel(m, &E, &Bx, &By, src, step_time,
+                if (calcul_2D_diel(m, &E, &Bx, &By, &E_phas_2D, src, step_time,
                                    dt, EPS_0, src.w, dx,
                                    eps_r_guide, sigma_0, length, 0, 0))
                     printf("Erreur simulation\n");
@@ -187,7 +188,7 @@ int main() {
             case 11: {
                 // Prisme dispersif Debye
                 double w = PI * c /lambda;
-                if(debeye(m, &E_1D, &B_1D, step_time, dt, EPS_0, w))
+                if(debeye(m, &E_1D, &B_1D, &E_phas_1D, step_time, dt, EPS_0, w))
                     printf("Erreur simulation prisme Debye\n");
                 
                 break;
@@ -198,7 +199,7 @@ int main() {
                 source src = {.A = 1.0, .y_start = 1, .y_end = m - 1,
                               .x = round(m / 8), .forme = sin,
                               .w = PI * c / lambda};
-                if (calcul_2D_diel(m, &E, &Bx, &By, src, step_time,
+                if (calcul_2D_diel(m, &E, &Bx, &By, &E_phas_2D, src, step_time,
                                    dt, EPS_0, src.w, dx,
                                    eps_r_0, sigma_0, length, 2, 0))
                     printf("Erreur simulation\n");
@@ -209,7 +210,7 @@ int main() {
                 source src = {.A = 1.0, .y_start = round(m*0.3), .y_end = round(m*0.7),
                               .x = round(m / 8), .forme = sin,
                               .w = PI * c / lambda};
-                if (calcul_2D_diel(m, &E, &Bx, &By, src, step_time,
+                if (calcul_2D_diel(m, &E, &Bx, &By, &E_phas_2D, src, step_time,
                                    dt, EPS_0, src.w, dx,
                                    eps_r_lentille, sigma_0, length, 0, 0))
                     printf("Erreur simulation\n");
@@ -220,7 +221,7 @@ int main() {
                 source src = {.A = 1.0, .y_start = 1, .y_end = m-1,
                               .x = round(m / 8), .forme = sin,
                               .w = PI * c / lambda};
-                if (calcul_2D_diel(m, &E, &Bx, &By, src, step_time,
+                if (calcul_2D_diel(m, &E, &Bx, &By, &E_phas_2D, src, step_time,
                    dt, EPS_0, src.w, dx,
                    eps_r_0, sigma_0, length, 3, 0))
                     printf("Erreur simulation\n");
