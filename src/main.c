@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "calcul_1D_diel.h"
 #include "calcul_1D_libre.h"
@@ -13,6 +14,7 @@
 #include "simulations_1D.h"
 #include "estimate_refraction_angle.h"
 #include "debeye.h"
+#include "emission.h"
 
 #define PI 3.14159265359
 #define EPS_0 8.854e-12
@@ -36,7 +38,8 @@ int main() {
 
     int choix = 0;
     char buf[32];
-
+    char message[256];
+    printf("%d\n", step_time);
     while (1) {
         printf("\n1. Fentes de Young\n"
                "2. Poynting - fentes de Young\n"
@@ -52,6 +55,7 @@ int main() {
                "12. Simple fente\n"
                "13. Lentille\n"
                "14. Fabry Perot\n"
+               "15. Envoi d\'informations\n"
                "0. Quitter\n> ");
         fgets(buf, sizeof(buf), stdin);
 
@@ -225,6 +229,30 @@ int main() {
                    dt, EPS_0, src.w, dx,
                    eps_r_0, sigma_0, length, 3, 0))
                     printf("Erreur simulation\n");
+                break;
+            }
+
+            case 15: {
+                printf("Entrez le message a envoyer : ");
+                if (!fgets(message, sizeof(message), stdin)) {
+                    printf("Erreur lecture message\n");
+                    break;
+                }
+                size_t len = strlen(message);
+                if (len > 0 && message[len - 1] == '\n')
+                    message[len - 1] = '\0';
+
+                //Adaptation des paramètres pour la simulation
+                double case_length = length * 10.0;
+                double case_time = case_length / c;
+                int case_m = round(case_length / dx);
+                int case_step_time = round(case_time / dt);
+                int xr = round(3.0 * case_m / 5.0);
+                int yr = round(3.0 * case_m / 5.0);
+
+                if (emission(case_m, &E, &Bx, &By, xr, yr, case_step_time,
+                             dt, EPS_0, dx, case_length, lambda, message))
+                    printf("Erreur simulation emission\n");
                 break;
             }
 
