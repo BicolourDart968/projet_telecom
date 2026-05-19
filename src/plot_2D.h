@@ -42,6 +42,9 @@ void gp_plot_field(FILE *gp, double **field, int m);
 
 void gp_plot_curve(FILE *gp, double *data, int n, const char *color);
 
+void gp_plot_xy_curve(FILE *gp, double *x, double *y, int n,
+                      const char *color, const char *label);
+
 void gp_plot_power(FILE *gp, double *P_sim, double *P_theo,
                           int q, double dt, int q_start);
 

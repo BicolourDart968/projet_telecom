@@ -9,6 +9,7 @@
 #include "plot_1D.h"
 #include "fonctions.h"
 #include "plot_2D.h"
+#include "calcul_2D_libre.h"
 #include "calcul_2D_diel.h"
 #include "calcul_2D_antenne.h"
 #include "simulations_1D.h"
@@ -31,7 +32,7 @@ int main() {
     length = 20 * lambda;
     dx = lambda / 20;
     dt = dx / (2 * c);
-    time = length / c;
+    time = length / (2*c);
 
     m = round(length / dx);
     step_time = round(time / dt);
@@ -55,7 +56,8 @@ int main() {
                "12. Simple fente\n"
                "13. Lentille\n"
                "14. Fabry Perot\n"
-               "15. Envoi d\'informations\n"
+               "15. Envoi d'informations\n"
+               "16. Phaseur 2D\n"
                "0. Quitter\n> ");
         fgets(buf, sizeof(buf), stdin);
 
@@ -243,7 +245,7 @@ int main() {
                     message[len - 1] = '\0';
 
                 //Adaptation des paramètres pour la simulation
-                double case_length = length * 10.0;
+                double case_length = length*10;
                 double case_time = case_length / c;
                 int case_m = round(case_length / dx);
                 int case_step_time = round(case_time / dt);
@@ -256,6 +258,81 @@ int main() {
                 break;
             }
 
+            case 16 :{
+               source src = {.A = 1.0, .y_start = round(m/2), .y_end = round(m/2),
+                              .x = round(m / 2), .forme = sin,
+                              .w = PI * c / lambda};
+                if (calcul_2D_libre(m, &E, &Bx, &By, &E_phas_2D, sin, step_time,
+                                   dt, EPS_0, src.w, dx,
+                                   eps_r_0, length)) {
+                    printf("Erreur simulation\n");
+                } else {
+                    FILE *gp2d = gp_open();
+                    if (gp2d) {
+                        double maxval = 0.0;
+                        for (int i = 0; i < m; i++) {
+                            for (int j = 0; j < m; j++) {
+                                if (E_phas_2D[i][j] > maxval)
+                                    maxval = E_phas_2D[i][j];
+                            }
+                        }
+                        gp_setup_image(gp2d, m, 0.0, maxval > 0 ? maxval : 1e-6,
+                                       "Phaseur 2D en espace libre");
+                        gp_plot_field(gp2d, E_phas_2D, m);
+                        gp_close(gp2d);
+                    }
+
+                    int center = round(m / 2);
+                    int margin = 3;
+                    int start = center + margin;
+                    int n = m - start;
+                    if (n > 0) {
+                        double *r = malloc(sizeof(double) * n);
+                        double *Eline = malloc(sizeof(double) * n);
+                        double *Etheo = malloc(sizeof(double) * n);
+                        if (r && Eline && Etheo) {
+                            for (int i = 0; i < n; i++) {
+                                int ix = start + i;
+                                r[i] = dx * (ix - center);
+                                Eline[i] = E_phas_2D[ix][center];
+                            }
+                            
+                            // Calcul de la constante A basé sur le premier point valide
+                            // Cela évite que les réflexions aux frontières (fin du domaine) ne faussent A
+                            double A_const = Eline[0] * sqrt(r[0]);
+                            
+                            for (int i = 0; i < n; i++) {
+                                Etheo[i] = A_const / sqrt(r[i]);
+                            }
+
+                            FILE *gpcurve = gp_open();
+                            if (gpcurve) {
+                                gp_setup_curve(gpcurve,
+                                               "Comparaison E_phas centre vs A/sqrt(r)",
+                                               "distance r (m)", "E_phas");
+                                
+                                // Injection de la valeur de A_const directement dans le titre de la légende Gnuplot
+                                fprintf(gpcurve,
+                                        "plot '-' with lines lw 2 lc rgb 'blue' title 'E_phas centre',"
+                                        " '-' with lines lw 2 lc rgb 'red' title '%.4f / sqrt(r)'\n", A_const);
+                                
+                                for (int i = 0; i < n; i++)
+                                    fprintf(gpcurve, "%g %g\n", r[i], Eline[i]);
+                                fprintf(gpcurve, "e\n");
+                                for (int i = 0; i < n; i++)
+                                    fprintf(gpcurve, "%g %g\n", r[i], Etheo[i]);
+                                fprintf(gpcurve, "e\n");
+                                fflush(gpcurve);
+                                gp_close(gpcurve);
+                            }
+                        }
+                        free(r);
+                        free(Eline);
+                        free(Etheo);
+                    }
+                }
+                break;
+            }
             default:
                 printf("Choix invalide\n");
         }

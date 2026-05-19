@@ -25,7 +25,7 @@ static double **alloc_field(int m) {
 int calcul_2D_libre(int m, double ***E, double ***Bx, double ***By, double ***E_phas, double (*source)(double), int step_time, double dt, double eps_0, double w, double dx, double (*mur_conduct)(double, double, double), double length) {
 
     double A = 1.0;       //amplitude de la source
-    int frame = 1;
+    int frame = 20;
 
     /* --- Allocation des champs --- */
     *E  = alloc_field(m);

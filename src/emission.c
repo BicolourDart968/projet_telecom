@@ -161,12 +161,12 @@ int emission(int m, double ***E, double ***Bx, double ***By,
 
             // Évaluer l'enveloppe tous les N pas de temps (= 1 bit)
             if (rms_count >= N_period) {
-                double envelope = sqrt(rms_acc / rms_count);
+                double envelope = sqrt(rms_acc / rms_count);  //Moyenne quadratique
                 
                 rms_acc = 0.0;
                 rms_count = 0;
 
-                // Calibrer le seuil sur les premiers bits (préambule = que des 1)
+                // Calibrer le seuil sur les premiers bits
                 if (envelope > rx_envelope_max)
                     rx_envelope_max = envelope;
 

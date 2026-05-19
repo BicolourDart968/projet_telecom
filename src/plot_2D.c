@@ -87,6 +87,17 @@ void gp_plot_curve(FILE *gp, double *data, int n, const char *color) {
     fflush(gp);
 }
 
+void gp_plot_xy_curve(FILE *gp, double *x, double *y, int n,
+                      const char *color, const char *label) {
+    if (!gp || !x || !y) return;
+    fprintf(gp, "plot '-' with lines lc rgb '%s' title '%s'\n",
+            color ? color : "red", label ? label : "data");
+    for (int i = 0; i < n; i++)
+        fprintf(gp, "%g %g\n", x[i], y[i]);
+    fprintf(gp, "e\n");
+    fflush(gp);
+}
+
 void gp_plot_power(FILE *gp, double *P_sim, double *P_theo,
                           int q, double dt, int q_start)
 {

@@ -127,7 +127,7 @@ double single_slit(double x, double y, double length, double dx) {
     double center_x = length / 2.0;
     double thickness = 5.0 * dx;
     double slit_center = length / 2.0;
-    double slit_width = length / 20.0;
+    double slit_width = 40*dx;
 
     if (fabs(x - center_x) <= thickness / 2.0) {
         if (fabs(y - slit_center) <= slit_width / 2.0) {
